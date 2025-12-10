@@ -27,5 +27,5 @@ SiSePuede/
 4. Results saved to `output/`
 
 ## Team
-- [Your Name] - Lead
+- Shan Wijesooriya - Lead
 - Yusri - Analyst
