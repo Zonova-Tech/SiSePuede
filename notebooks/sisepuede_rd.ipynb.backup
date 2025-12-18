@@ -16,42 +16,18 @@
     }
    ],
    "source": [
-    "# CELL 1: Setup Portable Paths\n",
+    "# CELL 1\n",
     "import os\n",
-    "import sys\n",
-    "from pathlib import Path\n",
     "import pandas as pd\n",
     "import numpy as np\n",
     "import matplotlib.pyplot as plt\n",
     "import difflib\n",
     "import traceback\n",
     "\n",
-    "# Get project root automatically\n",
-    "current_dir = Path(os.getcwd())\n",
-    "if current_dir.name == 'notebooks':\n",
-    "    project_root = current_dir.parent\n",
-    "else:\n",
-    "    project_root = current_dir\n",
-    "\n",
-    "# Define paths relative to project root\n",
-    "DATA_DIR = project_root / \"data\"\n",
-    "RAW_DATA_DIR = DATA_DIR / \"raw\"\n",
-    "PROCESSED_DATA_DIR = DATA_DIR / \"processed\"\n",
-    "OUTPUT_DIR = project_root / \"output\"\n",
-    "FIGURES_DIR = OUTPUT_DIR / \"figures\"\n",
-    "\n",
-    "# Create directories if they don't exist\n",
-    "for d in [RAW_DATA_DIR, PROCESSED_DATA_DIR, FIGURES_DIR]:\n",
-    "    d.mkdir(parents=True, exist_ok=True)\n",
-    "\n",
-    "# Your data file - CHANGE THIS to your actual filename\n",
-    "DATA_FILE = \"Energy Data 16122025.xlsx\"\n",
-    "file_path = RAW_DATA_DIR / DATA_FILE\n",
-    "\n",
-    "print(f\"✓ Project root: {project_root}\")\n",
-    "print(f\"✓ Data directory: {DATA_DIR}\")\n",
-    "print(f\"Expecting file at: {file_path}\")\n",
-    "print(f\"Exists: {file_path.exists()}\")"
+    "# Define your file path (you told me both notebook and file are in C:\\Users\\shanp)\n",
+    "file_path = r\"C:\\Users\\shanp\\Projects\\SiSePuede\\data\\raw\\Energy Data 16122025.xlsx\"\n",
+    "print(\"Expecting file at:\", file_path)\n",
+    "print(\"Exists:\", os.path.exists(file_path))\n"
    ]
   },
   {
@@ -69,16 +45,15 @@
     }
    ],
    "source": [
-    "# CELL 2: Load Excel File\n",
-    "if not file_path.exists():\n",
-    "    raise FileNotFoundError(f\"Excel file not found at {file_path}. Please place '{DATA_FILE}' in {RAW_DATA_DIR}\")\n",
+    "# CELL 2\n",
+    "if not os.path.exists(file_path):\n",
+    "    raise FileNotFoundError(f\"Excel file not found at {file_path}. Please ensure the file is exactly at that path.\")\n",
     "\n",
     "xls = pd.ExcelFile(file_path)\n",
     "print(\"Sheets in workbook:\", xls.sheet_names)\n",
     "\n",
-    "# Try to load the first sheet (or specify your preferred sheet)\n",
-    "preferred_sheet = xls.sheet_names[0]  # Use first sheet by default\n",
-    "print(f\"Will load sheet: {preferred_sheet}\")"
+    "# We'll try to load a sheet matching the string you gave; if that fails, we'll use the first sheet.\n",
+    "preferred_sheet = \"sisepuede_latest_16122005.xlsx\"  # you gave this earlier; we'll attempt it but fallback to first sheet\n"
    ]
   },
   {
@@ -624,22 +599,20 @@
     }
    ],
    "source": [
-    "# CELL 3: Read Data from Sheet\n",
+    "# CELL 3\n",
     "try:\n",
-    "    df_raw = pd.read_excel(file_path, sheet_name=preferred_sheet, header=0)\n",
+    "    # Try loading the sheet by exact name first (in case that's actually the sheet name)\n",
+    "    df_raw = pd.read_excel(file_path, sheet_name=preferred_sheet)\n",
     "    used_sheet = preferred_sheet\n",
-    "    print(f\"✓ Loaded sheet: {used_sheet}\")\n",
+    "    print(f\"Loaded sheet by name: {used_sheet}\")\n",
     "except Exception as e:\n",
-    "    print(f\"Error loading sheet: {e}\")\n",
-    "    # Try with no header and use first row as headers\n",
+    "    # Fallback to first sheet\n",
     "    df_raw = pd.read_excel(file_path, sheet_name=0)\n",
-    "    # Set first row as column names\n",
-    "    df_raw.columns = df_raw.iloc[0]\n",
-    "    df_raw = df_raw.drop(0).reset_index(drop=True)\n",
-    "    print(f\"✓ Loaded with first row as header\")\n",
+    "    used_sheet = xls.sheet_names[0]\n",
+    "    print(f\"Could not load by name ({preferred_sheet}). Fallback to first sheet: {used_sheet}\")\n",
     "\n",
     "print(\"Raw data shape:\", df_raw.shape)\n",
-    "display(df_raw.head(10))"
+    "display(df_raw.head(10))\n"
    ]
   },
   {
@@ -1598,15 +1571,14 @@
     }
    ],
    "source": [
-    "# CELL 9: Save Processed Data (PORTABLE)\n",
-    "output_csv = PROCESSED_DATA_DIR / \"df_input_for_sisepuede.csv\"\n",
-    "df_mapped.to_csv(output_csv, index=False)\n",
-    "print(f\"✓ Saved cleaned df_mapped to: {output_csv}\")\n",
+    "# CELL 9\n",
+    "out_csv = r\"C:\\Users\\shanp\\df_input_for_sisepuede.csv\"\n",
+    "df_mapped.to_csv(out_csv, index=False)\n",
+    "print(\"Saved cleaned df_mapped to:\", out_csv)\n",
     "\n",
     "# Use df_input variable used by your pipeline\n",
     "df_input = df_mapped.copy()\n",
-    "print(f\"✓ Prepared df_input shape: {df_input.shape}\")\n",
-    "print(f\"✓ Saved to: {output_csv.relative_to(project_root)}\")"
+    "print(\"Prepared df_input shape:\", df_input.shape)\n"
    ]
   },
   {
@@ -1843,29 +1815,18 @@
     }
    ],
    "source": [
-    "# CELL 11: Plotting with Portable Save Path\n",
+    "# CELL 11\n",
     "numeric_cols = df_input.select_dtypes(include=[\"number\"]).columns.tolist()\n",
     "print(\"Numeric columns sample:\", numeric_cols[:30])\n",
     "\n",
     "if numeric_cols:\n",
     "    sample_var = numeric_cols[0]\n",
     "    print(\"Plotting sample:\", sample_var)\n",
-    "    \n",
-    "    fig, ax = plt.subplots(figsize=(10,4))\n",
-    "    df_input.groupby('time_period')[sample_var].sum().plot(\n",
-    "        ax=ax,\n",
-    "        title=f\"Total {sample_var} by time_period\"\n",
-    "    )\n",
-    "    \n",
-    "    # Save with portable path\n",
-    "    figure_path = FIGURES_DIR / \"sample_timeseries.png\"\n",
-    "    plt.savefig(figure_path, dpi=300, bbox_inches='tight')\n",
+    "    ax = df_input.groupby('time_period')[sample_var].sum().plot(title=f\"Total {sample_var} by time_period\", figsize=(10,4))\n",
     "    plt.tight_layout()\n",
     "    plt.show()\n",
-    "    \n",
-    "    print(f\"✓ Saved figure to: {figure_path.relative_to(project_root)}\")\n",
     "else:\n",
-    "    print(\"No numeric columns to plot.\")"
+    "    print(\"No numeric columns to plot.\")\n"
    ]
   },
   {
@@ -2064,13 +2025,10 @@
     "    ax.grid(True, alpha=0.3)\n",
     "    \n",
     "    plt.tight_layout()\n",
-    "    \n",
-    "    # Save with portable path\n",
-    "    chart_path = FIGURES_DIR / \"emissions_pathway.png\"\n",
-    "    plt.savefig(chart_path, dpi=300, bbox_inches='tight')\n",
+    "    plt.savefig(r'C:\\Users\\shanp\\emissions_pathway.png', dpi=300, bbox_inches='tight')\n",
     "    plt.show()\n",
     "    \n",
-    "    print(f\"✓ Chart saved to: {chart_path.relative_to(project_root)}\")\n",
+    "    print(\"✓ Chart saved to: C:\\\\Users\\\\shanp\\\\emissions_pathway.png\")\n",
     "else:\n",
     "    print(\"Cannot create emissions chart - no valid data\")"
    ]
@@ -2144,13 +2102,10 @@
     "    ax4.grid(True, alpha=0.3)\n",
     "    \n",
     "    plt.tight_layout()\n",
-    "    \n",
-    "    # Save with portable path\n",
-    "    comparison_path = FIGURES_DIR / \"scenario_comparison.png\"\n",
-    "    plt.savefig(comparison_path, dpi=300, bbox_inches='tight')\n",
+    "    plt.savefig(r'C:\\Users\\shanp\\scenario_comparison.png', dpi=300, bbox_inches='tight')\n",
     "    plt.show()\n",
     "    \n",
-    "    print(f\"✓ Comparison chart saved to: {comparison_path.relative_to(project_root)}\")\n",
+    "    print(\"✓ Comparison chart saved\")\n",
     "    print(f\"Total emissions avoided: {cumulative_reduction.iloc[-1]:,.0f}\")\n",
     "    print(f\"Average annual reduction: {reduction.mean():,.0f}\")\n",
     "else:\n",
@@ -2246,12 +2201,10 @@
     "        ax_compare.set_ylabel('Total CO2e', fontweight='bold')\n",
     "        ax_compare.grid(True, alpha=0.2, axis='y')\n",
     "    \n",
-    "    # Save with portable path\n",
-    "    dashboard_path = FIGURES_DIR / \"multi_scenario_dashboard.png\"\n",
-    "    plt.savefig(dashboard_path, dpi=300, bbox_inches='tight')\n",
+    "    plt.savefig(r'C:\\Users\\shanp\\multi_scenario_dashboard.png', dpi=300, bbox_inches='tight')\n",
     "    plt.show()\n",
     "    \n",
-    "    print(f\"✓ Dashboard saved to: {dashboard_path.relative_to(project_root)}\")\n",
+    "    print(\"✓ Dashboard saved to: C:\\\\Users\\\\shanp\\\\multi_scenario_dashboard.png\")\n",
     "\n",
     "# Example usage (you need to create multiple scenarios first)\n",
     "print(\"Dashboard function defined. Use after creating multiple scenarios.\")"
@@ -2325,9 +2278,9 @@
     }
    ],
    "source": [
-    "# CELL 20: Export Results with Portable Path\n",
+    "# CELL 20: Export Results Summary\n",
     "# Create summary Excel file with multiple sheets\n",
-    "output_excel = PROCESSED_DATA_DIR / \"sisepuede_analysis_results.xlsx\"\n",
+    "output_excel = r\"C:\\Users\\shanp\\sisepuede_analysis_results.xlsx\"\n",
     "\n",
     "with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:\n",
     "    # Sheet 1: Baseline emissions\n",
@@ -2349,16 +2302,8 @@
     "    }\n",
     "    pd.DataFrame(summary_data).to_excel(writer, sheet_name='Summary', index=False)\n",
     "    \n",
-    "    print(f\"✓ Results exported to: {output_excel.relative_to(project_root)}\")"
+    "    print(f\"✓ Results exported to: {output_excel}\")"
    ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "1e911b9e-1a8a-4e45-b54d-7b13614012d5",
-   "metadata": {},
-   "outputs": [],
-   "source": []
   }
  ],
  "metadata": {
