@@ -1,0 +1,17 @@
+SISEPUEDE DATA PREPARATION DIAGNOSTIC REPORT
+============================================================
+
+Generated: 2025-12-20 21:26:27.639080
+Input file: sisepuede_raw_inputs_latest_LKA.xlsx
+Output file: df_input_for_sisepuede.csv
+
+Data Shape: (56, 2421)
+Regions: ['sri_lanka']
+Time periods: 0 to 55
+
+Missing columns: 0
+Extra columns: 2
+Matching columns: 2419
+
+
+Null value summary:
